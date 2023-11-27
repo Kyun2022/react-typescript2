@@ -13,7 +13,13 @@ import { User } from './types/api/user';
 
 const App = () => {
   const [userProfiles, setUserProfiles] = useState<Array<UserProfile>>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
   const onClickFetchUser = () => {
+    setLoading(true);
+    setError(false);
+
     axios
       .get<Array<User>>('https://jsonplaceholder.typicode.com/users')
       .then((res) => {
@@ -24,20 +30,34 @@ const App = () => {
           address: `${user.address.city}${user.address.street}${user.address.suite}`,
         }));
         setUserProfiles(data);
+      })
+      .catch(() => {
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   return (
     <div className="text-center mt-2 ">
       <button
-        className="p-4 bg-gray-400 rounded-xl text-white"
+        className="p-4  bg-gray-400 rounded-xl text-white"
         onClick={onClickFetchUser}
       >
         データ取得
       </button>
-      {userProfiles.map((user) => (
-        <UserCard key={user.id} user={user} />
-      ))}
+      {error ? (
+        <p className="text-red-700 mt-8">データの取得に失敗しました</p>
+      ) : loading ? (
+        <p className="mt-8">Loading...</p>
+      ) : (
+        <>
+          {userProfiles.map((user) => (
+            <UserCard key={user.id} user={user} />
+          ))}
+        </>
+      )}
     </div>
   );
 };
